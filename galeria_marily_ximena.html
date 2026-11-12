@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galería</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: transparent;
+}
+
+.gallery {
+  width: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #b9c9db;
+  background: #e8eef6;
+  box-shadow: 0 7px 22px rgba(90,120,155,.12);
+  touch-action: pan-y;
+}
+
+.slides {
+  display: flex;
+  will-change: transform;
+  transition: transform 850ms cubic-bezier(.22,.75,.22,1);
+}
+
+.slide {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #e8eef6;
+  position: relative;
+}
+
+.slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transform: scale(1.045);
+  opacity: .72;
+  filter: blur(5px);
+  transition:
+    transform 1100ms cubic-bezier(.2,.7,.2,1),
+    opacity 900ms ease,
+    filter 900ms ease;
+}
+
+.slide.is-active img {
+  transform: scale(1);
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* Deslizamiento táctil natural; no hay reproducción automática. */
+@media (prefers-reduced-motion: reduce) {
+  .slides,
+  .slide img {
+    transition: none;
+  }
+}
+</style>
+</head>
+
+<body>
+  <main class="gallery" aria-label="Galería de fotografías">
+    <div class="carousel" id="carousel">
+      <div class="slides" id="slides">
+        <div class="slide is-active"><img src="fotos/foto1.jpeg" alt="Fotografía 1" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto2.jpeg" alt="Fotografía 2" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto3.jpeg" alt="Fotografía 3" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto4.jpeg" alt="Fotografía 4" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto5.jpeg" alt="Fotografía 5" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto6.jpeg" alt="Fotografía 6" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto7.jpeg" alt="Fotografía 7" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto8.jpeg" alt="Fotografía 8" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto9.jpeg" alt="Fotografía 9" draggable="false"></div>
+        <div class="slide"><img src="fotos/foto10.jpeg" alt="Fotografía 10" draggable="false"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  const carousel = document.getElementById('carousel');
+  const slidesTrack = document.getElementById('slides');
+  const slides = Array.from(slidesTrack.querySelectorAll('.slide'));
+  const total = slides.length;
+
+  let current = 0;
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+
+  function showSlide(index) {
+    current = Math.max(0, Math.min(total - 1, index));
+    slidesTrack.style.transform = `translate3d(-${current * 100}%, 0, 0)`;
+
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('is-active', i === current);
+    });
+  }
+
+  carousel.addEventListener('touchstart', event => {
+    if (event.touches.length !== 1) return;
+    startX = event.touches[0].clientX;
+    startY = event.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  carousel.addEventListener('touchend', event => {
+    if (!tracking) return;
+    tracking = false;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+
+    if (Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+      showSlide(current + (deltaX < 0 ? 1 : -1));
+    }
+  }, { passive: true });
+
+  let pointerStartX = 0;
+  let pointerStartY = 0;
+
+  carousel.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'touch') return;
+    pointerStartX = event.clientX;
+    pointerStartY = event.clientY;
+  });
+
+  carousel.addEventListener('pointerup', event => {
+    if (event.pointerType === 'touch') return;
+    const deltaX = event.clientX - pointerStartX;
+    const deltaY = event.clientY - pointerStartY;
+
+    if (Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+      showSlide(current + (deltaX < 0 ? 1 : -1));
+    }
+  });
+
+  showSlide(0);
+})();
+</script>
+</body>
+</html>
